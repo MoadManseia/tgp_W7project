@@ -4,16 +4,30 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
+
+use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
     public function login(Request $request)
     {
-        $inputs = $request->validate([
-            'username'=>['required','string','min:4','max:250'],
-            'password'=>['required','min:8']
-        ]);
+        $validator = Validator::make($request->all(), [
+        'username' => ['required', 'string', 'min:4', 'max:250'],
+        'password' => ['required', 'string', 'min:6'],
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Validation failed',
+            'errors'  => $validator->errors(),
+        ], 422);
+    }
+
+
+    $inputs = $validator->validated();
 
 
 

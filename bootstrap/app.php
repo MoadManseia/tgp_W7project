@@ -15,5 +15,38 @@ return Application::configure(basePath: dirname(__DIR__))
         //
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        $exceptions->render(function (Throwable $e, Request $request) {
+
+        // Let Laravel handle non-API requests
+        if (! $request->expectsJson()) {
+            return null;
+        }
+
+        // ✅ Validation errors (422)
+        if ($e instanceof ValidationException) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors'  => $e->errors(),
+            ], 422);
+        }
+
+        // ✅ HTTP exceptions (401, 403, 404, etc.)
+        if ($e instanceof HttpExceptionInterface) {
+            return response()->json([
+                'success'   => false,
+                'exception' => class_basename($e),
+                'message'   => $e->getMessage(),
+            ], $e->getStatusCode());
+        }
+
+        // ✅ Fallback (500)
+        return response()->json([
+            'success'   => false,
+            'exception' => class_basename($e),
+            'message'   => config('app.debug')
+                ? $e->getMessage()
+                : 'Internal server error',
+        ], 500);
+    });
     })->create();

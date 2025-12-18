@@ -21,9 +21,9 @@ class AuthorMiddleware
             ], 401);
         }
 
-         if ($request->user()->status != 'approve') {
+         if ($request->user()->status != 'تم القبول') {
             return response()->json([
-                'message' => 'you are being approve yet'
+                'message' => 'you are not approved yet'
             ], 401);
         }
 

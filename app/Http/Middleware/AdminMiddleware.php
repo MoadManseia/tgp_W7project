@@ -15,13 +15,21 @@ class AdminMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
+        $user = $request->user();
 
-        if($request->user()->type == 'admin'){
-            return $next($request);
+        if (!$user) {
+            return response()->json([
+                'message' => 'Unauthenticated'
+            ], 401);
         }
 
-        return response()->json([
-            'message'=>'you are not a admin'
-        ],401);
+        if ($user->type !== 'admin') {
+            return response()->json([
+                'message' => 'You are not an admin'
+            ], 403);
+        }
+
+        return $next($request);
     }
+
 }
